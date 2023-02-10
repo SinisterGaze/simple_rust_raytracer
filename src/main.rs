@@ -81,7 +81,7 @@ pub trait Object3D {
 }
 
 pub struct Ray {
-    point: Point3D,
+    origin: Point3D,
     direction: Point3D,
 }
 
@@ -90,25 +90,30 @@ pub struct Sphere {
     radius: f64,
 }
 
-// Solve for ray: p0 + t * p intersecting with sphere: |x-x0| = r
-// results in solving a quadratic formula at^2 + bt + c = 0 with
-// a = p^2
-// b = 2 * p * (p0 - c)
-// c = x0^2 + p0^2 - r^2 - 2 * p0 * c
+
 impl Object3D for Sphere {
+    // Solve for ray: p0 + t * p intersecting with sphere: |x-x0| = r
+    // results in solving a quadratic formula at^2 + bt + c = 0 with
+    // a = p^2
+    // b = 2 * p * (p0 - c)
+    // c = x0^2 + p0^2 - r^2 - 2 * p0 * c
+    // requires D = b^2 - 4*ac >= 0 for solution(s) to exist
+    // returns the solution closest to the origin of the ray 
+    // (assuming the ray's origin is outside of the sphere)
+    // (assuming the sphere is in the +-direction of the ray)
     fn intersect(&self, ray: Ray) -> Option<Point3D> {
         let a = ray.direction.norm2(); // a = r^2
-        let b = 2.0 * (ray.direction * (ray.point - self.center));
-        let c = self.center.norm2() + ray.point.norm2()
+        let b = 2.0 * (ray.direction * (ray.origin - self.center));
+        let c = self.center.norm2() + ray.origin.norm2()
             - self.radius.powi(2)
-            - 2.0 * (ray.point * self.center);
+            - 2.0 * (ray.origin * self.center);
 
         let D = b * b - 4.0 * a * c;
         if D < 0.0 || approx_eq!(f64, a, 0.0, ulps = 2) {
             None
         } else {
-            let t = (-b - D.sqrt())/(2.0*a);
-            Some(ray.point + t * ray.direction)
+            let t = (-b - D.sqrt()) / (2.0*a);
+            Some(ray.origin + t * ray.direction)
         }
     }
 }
@@ -118,14 +123,21 @@ pub struct Plane {
     distance: f64,
 }
 
+
 impl Object3D for Plane {
+    // Solve for ray: p0 + t * p intersecting with plane: n * v = d * |n| where
+    // n = normal to plane
+    // d = distance to plane from origin
+    // v = vector on the plane
+    // results in solution t = (d * |n| - r0 * n) / (r * n)
+    // requires r * n =/= 0 for (unique) solution to exist (ray is not parallel with the plane)
     fn intersect(&self, ray: Ray) -> Option<Point3D> {
         if float_cmp::approx_eq!(f64, self.normal * ray.direction, 0.0, ulps = 2) {
             None
         } else {
-            let t: f64 = (self.distance * self.normal.norm() - ray.point * self.normal)
+            let t: f64 = (self.distance * self.normal.norm() - ray.origin * self.normal)
                 / (ray.direction * self.normal);
-            Some(ray.point + t * ray.direction)
+            Some(ray.origin + t * ray.direction)
         }
     }
 }
@@ -272,7 +284,7 @@ mod tests {
         };
 
         let my_ray = Ray {
-            point: Point3D {
+            origin: Point3D {
                 x: (1.0),
                 y: (2.0),
                 z: (-3.0),
@@ -297,7 +309,7 @@ mod tests {
         // Test of ray parallel to plane
         // No (unique) intersection point
         let parallel_ray = Ray {
-            point: Point3D {
+            origin: Point3D {
                 x: (1.0),
                 y: (2.0),
                 z: (-3.0),
@@ -323,7 +335,7 @@ mod tests {
         };
 
         let my_ray = Ray {
-            point: Point3D {
+            origin: Point3D {
                 x: (-1.0),
                 y: (4.0),
                 z: (1.0),
@@ -345,7 +357,7 @@ mod tests {
             radius: 3.0,
         };
         let my_ray = Ray {
-            point: Point3D { x: (2.0), y: (2.0), z: (2.0) },
+            origin: Point3D { x: (2.0), y: (2.0), z: (2.0) },
             direction: Point3D { x: (-1.0), y: (-1.0), z: (-1.0) }
         };
         let intersection_point = my_sphere.intersect(my_ray).unwrap();
