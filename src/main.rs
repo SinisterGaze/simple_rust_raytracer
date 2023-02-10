@@ -62,7 +62,12 @@ impl Point3D {
         result.normalize();
         result
     }
+    fn cross(a: Point3D, b: Point3D) -> Point3D {
+        Point3D { x: (a.y*b.z-a.z*b.y), y: -(a.x*b.z-a.z*b.x), z: (a.x*b.y-a.y*b.x) }
+    }
 }
+
+
 
 impl std::fmt::Display for Point3D {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -108,11 +113,11 @@ impl Object3D for Sphere {
             - self.radius.powi(2)
             - 2.0 * (ray.origin * self.center);
 
-        let D = b * b - 4.0 * a * c;
-        if D < 0.0 || approx_eq!(f64, a, 0.0, ulps = 2) {
+        let d = b * b - 4.0 * a * c;
+        if d < 0.0 || approx_eq!(f64, a, 0.0, ulps = 2) {
             None
         } else {
-            let t = (-b - D.sqrt()) / (2.0*a);
+            let t = (-b - d.sqrt()) / (2.0*a);
             Some(ray.origin + t * ray.direction)
         }
     }
@@ -254,15 +259,30 @@ mod tests {
     }
 
     #[test]
+    fn test_cross_product() {
+        let i = Point3D {x: 1.0, y: 0.0, z: 0.0};
+        let j = Point3D {x: 0.0, y: 1.0, z: 0.0};
+        let k = Point3D {x: 0.0, y: 0.0, z: 1.0};
+        assert_eq!(Point3D::cross(i, j), k);
+        assert_eq!(Point3D::cross(j, k), i);
+        assert_eq!(Point3D::cross(k, i), j);
+
+        assert_eq!(Point3D::cross(j, i), -k);
+        assert_eq!(Point3D::cross(k, j), -i);
+        assert_eq!(Point3D::cross(i, k), -j);
+    }
+    #[test]
     fn test_norm() {
-        let a = Point3D {
+        let mut a = Point3D {
             x: 1.0,
             y: 2.0,
             z: 2.0,
         };
         assert_eq!(a.norm(), 3.0); // sqrt(1*1 + 2*2 + 2*2) = sqrt(9) = 3
         let b = a.unit_vector();
+        a.normalize();
         assert_eq!(b.norm(), 1.0); // norm of normalized vector is a unit vector
+        assert_eq!(a.norm(), 1.0);
         let zero = Point3D {
             x: 0.0,
             y: 0.0,
@@ -346,8 +366,9 @@ mod tests {
                 z: (1.0),
             },
         };
+        #[allow(unused)]
         let intersection_point = my_plane.intersect(my_ray);
-        eprintln!("{}", intersection_point.unwrap()); // should be (0.6, 0, 1.8)
+        //eprintln!("{}", intersection_point.unwrap()); // should be (0.6, 0, 1.8)
     }
 
     #[test]
@@ -357,11 +378,11 @@ mod tests {
             radius: 3.0,
         };
         let my_ray = Ray {
-            origin: Point3D { x: (2.0), y: (2.0), z: (2.0) },
-            direction: Point3D { x: (-1.0), y: (-1.0), z: (-1.0) }
+            origin: Point3D { x: (0.0), y: (0.0), z: (5.0) },
+            direction: Point3D { x: (0.0), y: (0.0), z: (-1.0) }
         };
         let intersection_point = my_sphere.intersect(my_ray).unwrap();
-        eprintln!("{}", intersection_point);
+        //eprintln!("{}", intersection_point);
         assert_eq!(intersection_point, Point3D{x: 0.0, y: 0.0, z: 3.0});
 
     }
