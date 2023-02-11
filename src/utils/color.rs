@@ -1,5 +1,3 @@
-pub mod color;
-
 pub struct Color {
     pub red: f64,
     pub green: f64,

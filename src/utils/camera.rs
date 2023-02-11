@@ -1,4 +1,4 @@
-use crate::Vec3D;
+use crate::math::vector::Vec3D;
 
 pub struct Camera {
     pub origin: Vec3D,
