@@ -17,9 +17,7 @@ impl_op_ex!(-|lhs: &Vec3D, rhs: &Vec3D| -> Vec3D {
         z: (lhs.z - rhs.z),
     }
 });
-impl_op_ex!(*|lhs: &Vec3D, rhs: &Vec3D| -> f64 {
-    lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z
-});
+impl_op_ex!(*|lhs: &Vec3D, rhs: &Vec3D| -> f64 { lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z });
 impl_op_ex_commutative!(*|lhs: &Vec3D, rhs: &f64| -> Vec3D {
     Vec3D {
         x: (lhs.x * rhs),
@@ -42,7 +40,7 @@ impl_op_ex!(/= |lhs: &mut Vec3D, rhs: &f64| {lhs.x /= rhs; lhs.y /= rhs; lhs.z /
 
 impl Vec3D {
     pub fn new(x: f64, y: f64, z: f64) -> Vec3D {
-        Vec3D { x, y, z}
+        Vec3D { x, y, z }
     }
 
     pub fn norm(&self) -> f64 {
@@ -63,11 +61,13 @@ impl Vec3D {
         result
     }
     pub fn cross(a: Vec3D, b: Vec3D) -> Vec3D {
-        Vec3D { x: (a.y*b.z-a.z*b.y), y: -(a.x*b.z-a.z*b.x), z: (a.x*b.y-a.y*b.x) }
+        Vec3D {
+            x: (a.y * b.z - a.z * b.y),
+            y: -(a.x * b.z - a.z * b.x),
+            z: (a.x * b.y - a.y * b.x),
+        }
     }
 }
-
-
 
 impl std::fmt::Display for Vec3D {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -83,12 +83,20 @@ impl real_float::IsFinite for Vec3D {
 
 impl std::default::Default for Vec3D {
     fn default() -> Self {
-        Vec3D { x: 0.0, y: 0.0, z: 0.0 }
+        Vec3D {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        }
     }
 }
 
 pub trait Object3D {
     fn intersect(&self, ray: Ray) -> Option<Vec3D>;
+    fn get_normat_at(&self, point: Vec3D) -> Vec3D;
+    fn get_color() {
+        todo!();
+    }
 }
 
 pub struct Ray {
@@ -106,7 +114,43 @@ pub struct Plane {
     pub distance: f64,
 }
 
+pub struct Triangle {
+    pub vert_a: Vec3D,
+    pub vert_b: Vec3D,
+    pub vert_c: Vec3D,
+}
 
+impl Object3D for Triangle {
+    fn intersect(&self, ray: Ray) -> Option<Vec3D> {
+        let normal = self.get_normat_at(ray.origin);
+        let distance = self.vert_a * normal;
+
+        if float_cmp::approx_eq!(f64, normal * ray.direction, 0.0, ulps = 2) {
+            None
+        } else {
+            let t: f64 = (distance - ray.origin * normal) / (ray.direction * normal);
+            let p = ray.origin + t * ray.direction;
+
+            let test1: bool = Vec3D::cross(self.vert_b - self.vert_a, p - self.vert_a) * normal >= 0.0;
+            let test2: bool = Vec3D::cross(self.vert_c - self.vert_b, p - self.vert_b) * normal >= 0.0;
+            let test3: bool = Vec3D::cross(self.vert_a - self.vert_c, p - self.vert_c) * normal >= 0.0;
+
+            if test1 && test2 && test3 {
+                Some(p)
+            } else {
+                None
+            }
+        }
+    }
+
+    #[allow(unused)]
+    fn get_normat_at(&self, point: Vec3D) -> Vec3D {
+        let ab = self.vert_b - self.vert_a;
+        let ac = self.vert_c - self.vert_a;
+
+        Vec3D::cross(ab, ac).unit_vector()
+    }
+}
 
 impl Object3D for Sphere {
     // Solve for ray: p0 + t * p intersecting with sphere: |x-x0| = r
@@ -115,7 +159,7 @@ impl Object3D for Sphere {
     // b = 2 * p * (p0 - c)
     // c = x0^2 + p0^2 - r^2 - 2 * p0 * c
     // requires D = b^2 - 4*ac >= 0 for solution(s) to exist
-    // returns the solution closest to the origin of the ray 
+    // returns the solution closest to the origin of the ray
     // (assuming the ray's origin is outside of the sphere)
     // (assuming the sphere is in the +-direction of the ray)
     fn intersect(&self, ray: Ray) -> Option<Vec3D> {
@@ -129,9 +173,13 @@ impl Object3D for Sphere {
         if d < 0.0 || approx_eq!(f64, a, 0.0, ulps = 2) {
             None
         } else {
-            let t = (-b - d.sqrt()) / (2.0*a);
+            let t = (-b - d.sqrt()) / (2.0 * a);
             Some(ray.origin + t * ray.direction)
         }
+    }
+
+    fn get_normat_at(&self, point: Vec3D) -> Vec3D {
+        (point - self.center).unit_vector()
     }
 }
 
@@ -151,33 +199,30 @@ impl Object3D for Plane {
             Some(ray.origin + t * ray.direction)
         }
     }
-}
 
+    #[allow(unused)]
+    fn get_normat_at(&self, point: Vec3D) -> Vec3D {
+        return self.normal;
+    }
+}
 
 #[cfg(test)]
 mod geometry_tests {
+    use crate::math::geometry::{Object3D, Plane, Ray, Sphere, Vec3D, Triangle};
     use real_float::IsFinite;
-
-    use crate::math::geometry::{Object3D, Plane, Vec3D, Ray, Sphere};
 
     #[test]
     fn test_addition() {
         let a = Vec3D::new(1.0, 0.0, 1.0);
         let b = Vec3D::new(2.0, 2.0, -1.0);
-        assert_eq!(
-            a + b,
-            Vec3D::new(3.0, 2.0, 0.0)
-        );
+        assert_eq!(a + b, Vec3D::new(3.0, 2.0, 0.0));
     }
 
     #[test]
     fn test_subtraction() {
         let a = Vec3D::new(1.0, 2.0, 3.0);
         let b = Vec3D::new(1.0, -1.0, 1.0);
-        assert_eq!(
-            a - b,
-            Vec3D::new(0.0, 3.0, 2.0)
-        );
+        assert_eq!(a - b, Vec3D::new(0.0, 3.0, 2.0));
     }
 
     #[test]
@@ -186,20 +231,14 @@ mod geometry_tests {
         let b = a * 5.0;
         let c = 5.0 * a;
         assert_eq!(b, c);
-        assert_eq!(
-            b,
-            Vec3D::new(5.0, 10.0, 15.0)
-        );
+        assert_eq!(b, Vec3D::new(5.0, 10.0, 15.0));
     }
 
     #[test]
     fn test_scalar_div() {
         let a = Vec3D::new(2.0, 4.0, 6.0);
         let b = a / 2.0;
-        assert_eq!(
-            b,
-            Vec3D::new(1.0, 2.0, 3.0)
-        );
+        assert_eq!(b, Vec3D::new(1.0, 2.0, 3.0));
         assert!(!(a / 0.0).is_finite());
         let zero = Vec3D::default();
         assert!(!(zero / 0.0).is_finite());
@@ -252,10 +291,7 @@ mod geometry_tests {
         };
 
         let intersection_point = my_plane.intersect(my_ray);
-        assert_eq!(
-            intersection_point.unwrap(),
-            Vec3D::new(1.0, 2.0, 0.0)
-        );
+        assert_eq!(intersection_point.unwrap(), Vec3D::new(1.0, 2.0, 0.0));
 
         // Test of ray parallel to plane
         // No (unique) intersection point
@@ -295,5 +331,31 @@ mod geometry_tests {
         let intersection_point = my_sphere.intersect(my_ray).unwrap();
         //eprintln!("{}", intersection_point);
         assert_eq!(intersection_point, Vec3D::new(0.0, 0.0, 3.0));
+    }
+
+    #[test]
+    fn test_triangle_intersect() {
+        let my_triangle = Triangle {
+            vert_a: Vec3D::default(),
+            vert_b: Vec3D::new(1.0, 0.0, 0.0),
+            vert_c: Vec3D::new(0.0, 1.0, 0.0),
+        };
+        
+        // Intersect at (0.25, 0.25, 0)
+        let ray1 = Ray {
+            origin: Vec3D::new(0.25, 0.25, 5.0),
+            direction: Vec3D::new(0.0, 0.0, -1.0),
+        };
+        let p = my_triangle.intersect(ray1).unwrap();
+        assert_eq!(p, Vec3D::new(0.25, 0.25, 0.0));
+        
+        // No intersection
+        let ray2 = Ray {
+            origin: Vec3D::new(2.0, 2.0, 5.0),
+            direction: Vec3D::new(0.0, 0.0, -1.0),
+        };
+        let p = my_triangle.intersect(ray2);
+        assert_eq!(p, None);
+
     }
 }
