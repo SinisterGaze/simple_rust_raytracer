@@ -1,6 +1,5 @@
 use crate::math::vector::Vec3D;
 use crate::objects::{object3d::*, ray::Ray};
-use crate::utils::color::Color;
 
 pub struct Plane {
     pub normal: Vec3D,
