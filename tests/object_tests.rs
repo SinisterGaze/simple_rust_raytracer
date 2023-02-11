@@ -1,5 +1,5 @@
 use simple_raytracer::math::vector::Vec3D;
-use simple_raytracer::objects::{Object3D, ray::Ray, plane::Plane, sphere::Sphere, triangle::Triangle};
+use simple_raytracer::objects::{object3d::Object3D, ray::Ray, plane::Plane, sphere::Sphere, triangle::Triangle};
 
 #[test]
 fn test_plane_intersect() {

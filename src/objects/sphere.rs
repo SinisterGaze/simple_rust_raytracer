@@ -1,7 +1,7 @@
 use float_cmp::approx_eq;
 
 use crate::math::vector::Vec3D;
-use crate::objects::{Object3D, Ray};
+use crate::objects::{object3d::Object3D, ray::Ray};
 use crate::utils::color::Color;
 
 pub struct Sphere {
