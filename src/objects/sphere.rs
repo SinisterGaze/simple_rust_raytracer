@@ -1,13 +1,10 @@
-use float_cmp::approx_eq;
-
 use crate::math::vector::Vec3D;
-use crate::objects::{object3d::Object3D, ray::Ray};
+use crate::objects::{object3d::*, ray::Ray};
 use crate::utils::color::Color;
 
 pub struct Sphere {
     pub center: Vec3D,
     pub radius: f64,
-    
 }
 
 impl Object3D for Sphere {
@@ -20,23 +17,37 @@ impl Object3D for Sphere {
     // returns the solution closest to the origin of the ray
     // (assuming the ray's origin is outside of the sphere)
     // (assuming the sphere is in the +-direction of the ray)
-    fn intersect(&self, ray: Ray) -> Option<Vec3D> {
+    fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<IntersectionData> {
         let a = ray.direction.norm2(); // a = r^2
-        let b = 2.0 * (ray.direction * (ray.origin - self.center));
+        let b_half = ray.direction * (ray.origin - self.center);
         let c = self.center.norm2() + ray.origin.norm2()
             - self.radius.powi(2)
             - 2.0 * (ray.origin * self.center);
 
-        let d = b * b - 4.0 * a * c;
-        if d < 0.0 || approx_eq!(f64, a, 0.0, ulps = 2) {
-            None
-        } else {
-            let t = (-b - d.sqrt()) / (2.0 * a);
-            Some(ray.origin + t * ray.direction)
-        }
-    }
+        let discriminant = b_half * b_half - a * c;
+        if discriminant >= 0.0 {
+            let sqrt_discriminant = discriminant.sqrt();
+            let root1 = (-b_half - sqrt_discriminant) / a;
+            let root2 = (-b_half + sqrt_discriminant) / a;
+            let is_within_bounds = |t| -> bool { t_min < t && t < t_max };
+            let mut root = root1; // root1 <= root2
+            if !is_within_bounds(root1) {
+                root = root2;
+                if !is_within_bounds(root2) {
+                    return None;
+                }
+            }
 
-    fn get_normat_at(&self, point: Vec3D) -> Vec3D {
-        (point - self.center).unit_vector()
+            let p: Vec3D = ray.at(root);
+            let normal: Vec3D = (p - self.center) / self.radius;
+            let front_face: bool = ray.direction * normal < 0.0;
+
+            return Some(IntersectionData {
+                t: root,
+                normal: if front_face { normal } else { -normal },
+            });
+        } else {
+            None
+        }
     }
 }

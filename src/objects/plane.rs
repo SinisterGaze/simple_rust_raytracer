@@ -1,5 +1,5 @@
 use crate::math::vector::Vec3D;
-use crate::objects::{object3d::Object3D, ray::Ray};
+use crate::objects::{object3d::*, ray::Ray};
 use crate::utils::color::Color;
 
 pub struct Plane {
@@ -14,18 +14,23 @@ impl Object3D for Plane {
     // v = vector on the plane
     // results in solution t = (d * |n| - r0 * n) / (r * n)
     // requires r * n =/= 0 for (unique) solution to exist (ray is not parallel with the plane)
-    fn intersect(&self, ray: Ray) -> Option<Vec3D> {
-        if float_cmp::approx_eq!(f64, self.normal * ray.direction, 0.0, ulps = 2) {
+    fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<IntersectionData> {
+        if (self.normal * ray.direction).abs() <= f64::EPSILON {
             None
         } else {
             let t: f64 = (self.distance * self.normal.norm() - ray.origin * self.normal)
                 / (ray.direction * self.normal);
-            Some(ray.origin + t * ray.direction)
-        }
-    }
 
-    #[allow(unused)]
-    fn get_normat_at(&self, point: Vec3D) -> Vec3D {
-        return self.normal;
+            if t_min < t && t < t_max {
+                let normal = self.normal;
+                let front_face = ray.direction * normal < 0.0;
+                Some(IntersectionData {
+                    t: t,
+                    normal: if front_face { normal } else { -normal },
+                })
+            } else {
+                None
+            }
+        }
     }
 }

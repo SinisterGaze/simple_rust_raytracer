@@ -14,8 +14,8 @@ fn test_plane_intersect() {
         direction: Vec3D::new(0.0, 0.0, 1.0),
     };
 
-    let intersection_point = my_plane.intersect(my_ray);
-    assert_eq!(intersection_point.unwrap(), Vec3D::new(1.0, 2.0, 0.0));
+    let intersection_point = my_plane.intersect(&my_ray, 0.0, f64::INFINITY);
+    assert_eq!(intersection_point.unwrap().t, 3.0);
 
     // Test of ray parallel to plane
     // No (unique) intersection point
@@ -23,7 +23,7 @@ fn test_plane_intersect() {
         origin: Vec3D::new(1.0, 2.0, -3.0),
         direction: Vec3D::new(-5.0, 7.0, 0.0),
     };
-    let intersection_point = my_plane.intersect(parallel_ray);
+    let intersection_point = my_plane.intersect(&parallel_ray, 0.0, f64::INFINITY);
     assert_eq!(intersection_point, None);
 
     // Test compared to example gathered from https://www.kristakingmath.com/blog/intersection-of-a-line-and-a-plane
@@ -38,7 +38,7 @@ fn test_plane_intersect() {
         direction: Vec3D::new(2.0, -5.0, 1.0),
     };
     #[allow(unused)]
-    let intersection_point = my_plane.intersect(my_ray);
+    let intersection_point = my_plane.intersect(&my_ray, 0.0, f64::INFINITY);
     //eprintln!("{}", intersection_point.unwrap()); // should be (0.6, 0, 1.8)
 }
 
@@ -52,9 +52,9 @@ fn test_sphere_intersect() {
         origin: Vec3D::new(0.0, 0.0, 5.0),
         direction: Vec3D::new(0.0, 0.0, -1.0),
     };
-    let intersection_point = my_sphere.intersect(my_ray).unwrap();
+    let intersection_point = my_sphere.intersect(&my_ray, 0.0, f64::INFINITY).unwrap();
     //eprintln!("{}", intersection_point);
-    assert_eq!(intersection_point, Vec3D::new(0.0, 0.0, 3.0));
+    assert_eq!(intersection_point.t, 2.0);
 }
 
 #[test]
@@ -70,15 +70,15 @@ fn test_triangle_intersect() {
         origin: Vec3D::new(0.25, 0.25, 5.0),
         direction: Vec3D::new(0.0, 0.0, -1.0),
     };
-    let p = my_triangle.intersect(ray1).unwrap();
-    assert_eq!(p, Vec3D::new(0.25, 0.25, 0.0));
+    let p = my_triangle.intersect(&ray1, 0.0, f64::INFINITY).unwrap();
+    assert_eq!(p.t, 5.0);
     
     // No intersection
     let ray2 = Ray {
         origin: Vec3D::new(2.0, 2.0, 5.0),
         direction: Vec3D::new(0.0, 0.0, -1.0),
     };
-    let p = my_triangle.intersect(ray2);
+    let p = my_triangle.intersect(&ray2, 0.0, f64::INFINITY);
     assert_eq!(p, None);
 
 }
