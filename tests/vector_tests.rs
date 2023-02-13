@@ -1,5 +1,3 @@
-use real_float::IsFinite;
-
 use simple_raytracer::math::vector::Vec3D;
 
 #[test]

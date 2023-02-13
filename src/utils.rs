@@ -1,8 +1,5 @@
 use crate::math::vector::Vec3D;
 
-pub mod camera;
-pub mod light;
-
 use std::fs::File;
 use std::io::prelude::*;
 

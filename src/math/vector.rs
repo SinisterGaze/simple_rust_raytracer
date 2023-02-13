@@ -1,4 +1,3 @@
-use real_float;
 use std::ops;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -66,17 +65,14 @@ impl Vec3D {
             z: (a.x * b.y - a.y * b.x),
         }
     }
+    pub fn is_finite(self) -> bool {
+        self.x.is_finite() && self.y.is_finite() && self.z.is_finite()
+    }
 }
 
 impl std::fmt::Display for Vec3D {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "({}, {}, {})", self.x, self.y, self.z)
-    }
-}
-
-impl real_float::IsFinite for Vec3D {
-    fn is_finite(self) -> bool {
-        self.x.is_finite() && self.y.is_finite() && self.z.is_finite()
     }
 }
 

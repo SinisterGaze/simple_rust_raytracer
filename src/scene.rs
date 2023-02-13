@@ -1,24 +1,14 @@
+use crate::camera::Camera;
+use crate::light::LightSource;
 use crate::math::vector::Vec3D;
 use crate::objects::{hittables::*, ray::Ray};
-use crate::utils::{self, camera::Camera, light::LightSource};
+use crate::utils;
 
 use image::{self, Rgb};
 
 pub struct Scene {
-    // TODO:
-    // fields:
-    // - container for *objects
     pub objects: Vec<Box<dyn Hittable>>,
     pub light_sources: Vec<LightSource>,
-    // - container for *light_sources
-
-    // public methods:
-    // - get_intersections(ray, t_min, t_max) -> Vec<IntersectionData>
-    //
-
-    // private methods:
-    //
-    //
 }
 
 impl Scene {
@@ -48,7 +38,7 @@ impl Scene {
     }
 }
 
-pub struct SceneRenderer {
+pub struct Renderer {
     pub scene: Scene,
     pub camera: Camera,
     pub width: u32,
@@ -56,7 +46,7 @@ pub struct SceneRenderer {
     pub h_fov: f64,
 }
 
-impl SceneRenderer {
+impl Renderer {
     fn render_row(&self, row: u32) -> Vec<u8> {
         let cam_dir = (self.camera.look_at - self.camera.origin).unit_vector();
         let y_dir = Vec3D::new(0.0, 1.0, 0.0);
@@ -98,8 +88,3 @@ impl SceneRenderer {
         utils::save_ppm(filename, self.width, self.height, &self.render_scene())
     }
 }
-// public methods:
-// - capture(Scene object) -> &[u8]
-//
-// private methods:
-// - get_color_at(Scene object, x, y) -> Color
