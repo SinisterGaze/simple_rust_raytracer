@@ -1,12 +1,6 @@
 use crate::math::vector::Vec3D;
-use crate::objects::{
-    hittables::*, ray::Ray
-};
-use crate::utils::camera::Camera;
-use crate::utils::light::LightSource;
-
-use std::fs::File;
-use std::io::prelude::*;
+use crate::objects::{hittables::*, ray::Ray};
+use crate::utils::{self, camera::Camera, light::LightSource};
 
 use image::{self, Rgb};
 
@@ -55,18 +49,13 @@ impl Scene {
 }
 
 pub struct SceneRenderer {
-    // TODO:
-    // fields:
-    // - FoV, z_near, z_far
-    // - width, height
-    // - camera object
-    //
     pub scene: Scene,
     pub camera: Camera,
     pub width: u32,
     pub height: u32,
     pub h_fov: f64,
 }
+
 impl SceneRenderer {
     fn render_row(&self, row: u32) -> Vec<u8> {
         let cam_dir = (self.camera.look_at - self.camera.origin).unit_vector();
@@ -87,11 +76,12 @@ impl SceneRenderer {
                     origin: self.camera.origin,
                     direction: left_side + (x as f64) * x_shift,
                 };
-                self.scene.trace(&ray).0
+                self.scene.trace(&ray).0 // get underlying array [u8] from Rgb<u8>
             })
             .flatten()
             .collect()
     }
+
     pub fn render_scene(&self) -> Vec<u8> {
         (0..self.height)
             .into_iter()
@@ -99,27 +89,13 @@ impl SceneRenderer {
             .flatten()
             .collect()
     }
-    // ar = (w-1)/(h-1)
+
     fn get_inv_aspect_ratio(&self) -> f64 {
         ((self.height - 1) as f64) / ((self.width - 1) as f64)
     }
+
     pub fn save_ppm(&self, filename: &str) -> Result<(), std::io::Error> {
-        assert_eq!(&filename[filename.len()-4..], ".ppm");
-        let mut output = File::create(filename)?;
-        output.write_all(format!("P6\n{} {}\n255\n", self.width, self.height).as_bytes())?;
-        let pixels = self.render_scene();
-        (0..self.height).into_iter().for_each(|y| {
-            (0..self.width).into_iter().for_each(|x| {
-                let red = pixels[3 * (y * self.width + x) as usize];
-                let green = pixels[(3 * (y * self.width + x) + 1) as usize];
-                let blue = pixels[(3 * (y * self.width + x) + 2) as usize];
-                output.write_all(format!("{red}").as_bytes()).ok();
-                output.write_all(format!("{green}").as_bytes()).ok();
-                output.write_all(format!("{blue}").as_bytes()).ok();
-            });
-            output.write_all("\n".as_bytes()).ok();
-        });
-        Ok(())
+        utils::save_ppm(filename, self.width, self.height, &self.render_scene())
     }
 }
 // public methods:
