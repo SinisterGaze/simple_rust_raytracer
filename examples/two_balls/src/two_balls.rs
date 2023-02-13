@@ -1,7 +1,7 @@
+use simple_raytracer::camera::Camera;
 use simple_raytracer::math::vector::Vec3D;
 use simple_raytracer::objects::{plane::Plane, sphere::Sphere};
 use simple_raytracer::scene::*;
-use simple_raytracer::utils::camera::Camera;
 
 use image::{self, Rgb};
 
@@ -30,7 +30,7 @@ fn main() {
         look_at: Vec3D::new(0.0, 1.0, 0.0),
         up: Vec3D::new(0.0, 1.0, 0.0),
     };
-    let renderer = SceneRenderer {
+    let renderer = Renderer {
         scene: my_scene,
         width: 1920,
         height: 1080,
@@ -40,13 +40,22 @@ fn main() {
     // Capture scene as pixel array
     let pixels = renderer.render_scene();
 
+    let path = "examples/two_balls";
+    let name = "two_balls";
+
     // Save pixel array as ppm
     use simple_raytracer::utils::save_ppm;
-    save_ppm("my_scene.ppm", renderer.width, renderer.height, &pixels).ok();
+    save_ppm(
+        format!("{path}/{name}.ppm").as_str(),
+        renderer.width,
+        renderer.height,
+        &pixels,
+    )
+    .expect(format!("Could not create file {name}.ppm").as_str());
 
     // Save pixel array as png
     image::RgbImage::from_vec(renderer.width, renderer.height, pixels)
         .unwrap()
-        .save("my_scene.png")
-        .ok();
+        .save(format!("{path}/{name}.png").as_str())
+        .expect(format!("Could not create file {name}.png").as_str());
 }
