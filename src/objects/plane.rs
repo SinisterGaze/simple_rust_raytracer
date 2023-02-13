@@ -1,12 +1,15 @@
 use crate::math::vector::Vec3D;
-use crate::objects::{object3d::*, ray::Ray};
+use crate::objects::{hittables::*, ray::Ray};
+
+use image::Rgb;
 
 pub struct Plane {
     pub normal: Vec3D,
     pub distance: f64,
+    pub color: Rgb<u8>,
 }
 
-impl Object3D for Plane {
+impl Hittable for Plane {
     // Solve for ray: p0 + t * p intersecting with plane: n * v = d * |n| where
     // n = normal to plane
     // d = distance to plane from origin
@@ -26,6 +29,7 @@ impl Object3D for Plane {
                 Some(IntersectionData {
                     t: t,
                     normal: if front_face { normal } else { -normal },
+                    color: self.color,
                 })
             } else {
                 None

@@ -1,12 +1,15 @@
 use crate::math::vector::Vec3D;
-use crate::objects::{object3d::*, ray::Ray};
+use crate::objects::{hittables::*, ray::Ray};
+
+use image::Rgb;
 
 pub struct Sphere {
     pub center: Vec3D,
     pub radius: f64,
+    pub color: Rgb<u8>,
 }
 
-impl Object3D for Sphere {
+impl Hittable for Sphere {
     // Solve for ray: p0 + t * p intersecting with sphere: |x-x0| = r
     // results in solving a quadratic formula at^2 + bt + c = 0 with
     // a = p^2
@@ -44,6 +47,7 @@ impl Object3D for Sphere {
             return Some(IntersectionData {
                 t: root,
                 normal: if front_face { normal } else { -normal },
+                color: self.color,
             });
         } else {
             None

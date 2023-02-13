@@ -3,9 +3,9 @@ use std::ops;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vec3D {
-    x: f64,
-    y: f64,
-    z: f64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 impl_op_ex!(+ |lhs: &Vec3D, rhs: &Vec3D| -> Vec3D {Vec3D { x: (lhs.x+rhs.x), y: (lhs.y+rhs.y), z: (lhs.z+rhs.z) }});
