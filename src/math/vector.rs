@@ -58,6 +58,7 @@ impl Vec3D {
         result.normalize();
         result
     }
+
     pub fn cross(a: Vec3D, b: Vec3D) -> Vec3D {
         Vec3D {
             x: (a.y * b.z - a.z * b.y),
@@ -67,6 +68,28 @@ impl Vec3D {
     }
     pub fn is_finite(self) -> bool {
         self.x.is_finite() && self.y.is_finite() && self.z.is_finite()
+    }
+
+    pub fn almost_zero(self) -> bool {
+        self.norm2() <= f64::EPSILON
+    }
+
+    // projects self onto other, i.e. returns the component of self that is parallel to other
+    pub fn project_onto(self, other: Vec3D) -> Vec3D {
+        let scalar = (other * self) / other.norm2();
+        scalar * other
+    }
+    // returns self's perpendicular component to other 
+    pub fn perp(self, other: Vec3D) -> Vec3D {
+        self - self.project_onto(other)
+    }
+    // reflects incoming vector self on plane given by normal vector
+    pub fn reflect(self, normal: Vec3D) -> Vec3D {
+        self - 2.0 * self.project_onto(normal)
+    }
+
+    pub fn almost_equal(self, other: Vec3D) -> bool {
+        (self - other).almost_zero()
     }
 }
 
