@@ -1,32 +1,58 @@
 use simple_raytracer::camera::Camera;
+use simple_raytracer::light::LightSource;
+use simple_raytracer::materials::*;
 use simple_raytracer::math::vector::Vec3D;
 use simple_raytracer::objects::{plane::Plane, sphere::Sphere};
 use simple_raytracer::scene::*;
 
-use image::{self, Rgb};
+use image;
+use palette::LinSrgb;
 
 fn main() {
     let ball = Sphere {
         center: Vec3D::new(2.0, 1.0, 0.0),
         radius: 1.0,
-        color: Rgb([0, 0, 255]),
+        material: Material::Phong(PhongModel {
+            color: (LinSrgb::new(1.0, 0.0, 0.0)),
+            k_s: (0.0),
+            k_d: (0.5),
+            k_a: (1.0),
+            alpha: (2.0),
+        }),
     };
     let ball2 = Sphere {
         center: Vec3D::new(-2.0, 1.0, 0.0),
         radius: 1.0,
-        color: Rgb([255, 0, 255]),
+        material: Material::Phong(PhongModel {
+            color: (LinSrgb::new(1.0, 1.0, 1.0)),
+            k_s: (0.5),
+            k_d: (0.5),
+            k_a: (1.0),
+            alpha: (5.0),
+        }),
     };
     let floor = Plane {
         normal: Vec3D::new(0.0, 1.0, 0.0),
         distance: 0.0,
-        color: Rgb([0, 0, 0]),
+        material: Material::Phong(PhongModel {
+            color: (LinSrgb::new(0.1, 0.9, 0.0)),
+            k_s: (0.5),
+            k_d: (0.5),
+            k_a: (1.0),
+            alpha: (5.0),
+        }),
+    };
+    let light = LightSource {
+        position: Vec3D::new(5.0, 20.0, -5.0),
+        color: LinSrgb::new(1.0, 1.0, 1.0),
     };
     let my_scene = Scene {
         objects: vec![Box::new(ball), Box::new(floor), Box::new(ball2)],
-        light_sources: vec![],
+        light_sources: vec![light],
+        max_depth: 2,
     };
     let my_camera = Camera {
-        origin: Vec3D::new(0.0, 1.0, 5.0),
+        origin: Vec3D::new(0.0, 3.0, -5.0),
         look_at: Vec3D::new(0.0, 1.0, 0.0),
         up: Vec3D::new(0.0, 1.0, 0.0),
     };

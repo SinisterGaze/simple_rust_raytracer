@@ -1,6 +1,6 @@
 use crate::math::vector::Vec3D;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Ray {
     pub origin: Vec3D,
     pub direction: Vec3D,

@@ -1,22 +1,24 @@
 use crate::camera::Camera;
 use crate::light::LightSource;
+use crate::materials::Material;
 use crate::math::vector::Vec3D;
 use crate::objects::{hittables::*, ray::Ray};
 use crate::utils;
 
-use image::{self, Rgb};
+use palette::{Clamp, ComponentWise, LinSrgb, Pixel, Srgb, LinLuma};
 
 pub struct Scene {
     pub objects: Vec<Box<dyn Hittable>>,
     pub light_sources: Vec<LightSource>,
+    pub max_depth: u32,
 }
 
 impl Scene {
-    pub fn get_first_intersection(&self, ray: &Ray) -> Option<IntersectionData> {
+    pub fn get_first_intersection(&self, ray: Ray) -> Option<IntersectionData> {
         let mut best = f64::INFINITY;
         let mut winner: Option<IntersectionData> = None;
         for object in &self.objects {
-            match object.intersect(&ray, 0.00001, best) {
+            match object.intersect(ray, 0.00001, best) {
                 Some(intersection_data) => {
                     best = if intersection_data.t < best {
                         intersection_data.t
@@ -25,15 +27,77 @@ impl Scene {
                     };
                     winner = Some(intersection_data);
                 }
-                _ => continue,
+                None => continue,
             }
         }
         winner
     }
-    pub fn trace(&self, ray: &Ray) -> Rgb<u8> {
+
+    pub fn is_free_path(&self, ray: Ray, t_min: f64, t_max: f64) -> bool {
+        for object in &self.objects {
+            match object.intersect(ray, t_min, t_max) {
+                Some(_) => return false,
+                None => continue,
+            }
+        }
+        return true;
+    }
+
+    fn get_ambient_light(&self) -> LinSrgb {
+        let mut sum = LinSrgb::new(0.0, 0.0, 0.0);
+        for light in &self.light_sources {
+            sum += light.color;
+        }
+        sum
+    }
+
+    pub fn trace(&self, ray: Ray, depth: u32) -> LinSrgb {
         match self.get_first_intersection(ray) {
-            Some(intersection) => intersection.color,
-            None => Rgb([255, 255, 255]),
+            Some(intersection) => {
+                let normal = intersection.normal;
+                let ray_from = -intersection.ray.direction;
+                let intersection_point = intersection.ray.at(intersection.t);
+                match intersection.material {
+                    Material::Phong(phong_model) => {
+                        let mut object_color = LinSrgb::new(0.0, 0.0, 0.0);
+                        for light in &self.light_sources {
+                            let point_to_light = light.position - intersection_point;
+                            let dist = point_to_light.norm();
+                            let light_ray = Ray {
+                                origin: intersection_point + 0.001 * normal,
+                                direction: point_to_light / dist,
+                            };
+                            let cos_theta = normal * light_ray.direction;
+                            if cos_theta > 0.0 && self.is_free_path(light_ray, 0.0, dist) {
+                                let diffuse_component =
+                                    (phong_model.k_d * (light_ray.direction * normal)) as f32;
+                                let specular_component = (phong_model.k_s
+                                    * (light_ray.direction.reflect(normal).unit_vector()
+                                        * ray_from)
+                                        .powf(phong_model.alpha))
+                                    as f32;
+                                //println!("{:?} {:?}", diffuse_component, specular_component);
+                                object_color = object_color
+                                    .component_wise(&light.color, |a, b| {
+                                        a + b * (diffuse_component + specular_component) // / ((dist*dist) as f32)
+                                    })
+                                    .clamp();
+                            }
+                        }
+                        let mut reflected_color = LinSrgb::new(0.0, 0.0, 0.0);
+                        if depth < self.max_depth {
+                            let reflected_ray = Ray {
+                                origin: intersection_point + 0.0001 * normal,
+                                direction: intersection.ray.direction.reflect(normal),
+                            };
+                            reflected_color = self.trace(reflected_ray, depth + 1);
+                        }
+                        return object_color + reflected_color.component_wise_self(|x| x);
+                    }
+                    Material::None => return LinSrgb::new(0.0, 0.0, 0.0),
+                }
+            }
+            None => LinSrgb::new(0.0, 0.0, 0.0), //LinSrgb::new(117.0 / 255.0, 186.0 / 255.0, 1.0),
         }
     }
 }
@@ -66,7 +130,9 @@ impl Renderer {
                     origin: self.camera.origin,
                     direction: left_side + (x as f64) * x_shift,
                 };
-                self.scene.trace(&ray).0 // get underlying array [u8] from Rgb<u8>
+                Srgb::from_linear(self.scene.trace(ray, 0))
+                    .into_format()
+                    .into_raw::<[u8; 3]>() //<---- convert into byte array
             })
             .flatten()
             .collect()

@@ -1,12 +1,11 @@
+use crate::materials::Material;
 use crate::math::vector::Vec3D;
 use crate::objects::{hittables::*, ray::Ray};
-
-use image::Rgb;
 
 pub struct Sphere {
     pub center: Vec3D,
     pub radius: f64,
-    pub color: Rgb<u8>,
+    pub material: Material,
 }
 
 impl Hittable for Sphere {
@@ -19,7 +18,7 @@ impl Hittable for Sphere {
     // returns the solution closest to the origin of the ray
     // (assuming the ray's origin is outside of the sphere)
     // (assuming the sphere is in the +-direction of the ray)
-    fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<IntersectionData> {
+    fn intersect(&self, ray: Ray, t_min: f64, t_max: f64) -> Option<IntersectionData> {
         let a = ray.direction.norm2(); // a = r^2
         let b_half = ray.direction * (ray.origin - self.center);
         let c = self.center.norm2() + ray.origin.norm2()
@@ -45,12 +44,17 @@ impl Hittable for Sphere {
             let front_face: bool = ray.direction * normal < 0.0;
 
             return Some(IntersectionData {
+                ray: ray,
                 t: root,
                 normal: if front_face { normal } else { -normal },
-                color: self.color,
+                material: self.material,
             });
         } else {
             None
         }
+    }
+
+    fn get_material(&self) -> Material {
+        self.material
     }
 }
