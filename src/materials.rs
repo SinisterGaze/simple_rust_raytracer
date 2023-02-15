@@ -14,3 +14,7 @@ pub struct PhongModel {
     pub k_a: f64,
     pub alpha: f64,
 }
+
+// TODO:
+// - make the k_'s three-channeled variables (r,g,b) instead of single channel, remove color from struct
+// - find good way to implement ambient light in trace method in scene.rs
