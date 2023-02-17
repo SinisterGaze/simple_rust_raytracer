@@ -1,6 +1,5 @@
 use crate::camera::Camera;
 use crate::light::LightSource;
-use crate::materials::Material;
 use crate::math::vector::Vec3D;
 use crate::objects::{hittables::*, ray::Ray};
 use crate::utils;
@@ -58,57 +57,59 @@ impl Scene {
                 let normal = intersection.normal;
                 let to_viewer = -ray.direction.unit_vector();
                 let intersection_point = ray.at(intersection.t);
-                match intersection.material {
-                    Material::Phong(phong_model) => {
-                        let mut phong_color = LinSrgb::new(0.0, 0.0, 0.0); //phong_model.color;
-                        let object_color = phong_model.color;
-                        for light in &self.light_sources {
-                            let point_to_light = light.position - intersection_point;
-                            let dist = point_to_light.norm();
-                            let to_light = Ray {
-                                origin: intersection_point + 0.001 * normal,
-                                direction: point_to_light / dist,
-                            };
-                            let dot_diffuse = (normal * to_light.direction) as f32;
-                            if dot_diffuse > 0.0 && self.is_free_path(to_light, 0.0, dist) {
-                                let diffuse_component = dot_diffuse;
-                                let dot_specular =
-                                    (-to_light.direction).reflect(normal) * to_viewer;
-                                let specular_component = if dot_specular > 0.0 {
-                                    dot_specular.powf(phong_model.alpha as f64) as f32
-                                } else {
-                                    0.0
-                                };
 
-                                //println!("{:?}", to_light.direction.reflect(normal) * ray_from);
-                                // Add specular component to Phong Model blended color
-                                phong_color = phong_color
-                                    .component_wise(&light.color, |a, b| {
-                                        a + b * specular_component * phong_model.k_s
-                                    });
-                                // Add diffuse component to Phong Model blended color
-                                phong_color = phong_color
-                                    .component_wise(&phong_model.color, |a, b| {
-                                        a + b * diffuse_component * phong_model.k_d
-                                    });
-                            }
-                        }
-                        let mut reflected_color = LinSrgb::new(0.0, 0.0, 0.0);
-                        if depth < self.max_depth {
-                            let reflected_ray = Ray {
-                                origin: intersection_point + 0.0001 * normal,
-                                direction: intersection.ray.direction.reflect(normal),
-                            };
-                            reflected_color = self.trace(reflected_ray, depth + 1);
-                        }
-                        let ambient_color = object_color
-                            .component_wise(&ambient_light, |a, b| 0.05 * phong_model.k_a * (a + b));
-                        reflected_color = reflected_color.component_wise_self(|a| 0.3 * phong_model.k_s * a);
-                        let final_color = phong_color + reflected_color + ambient_color;
-                        return final_color.clamp();
+                let u = intersection.u;
+                let v = intersection.v;
+                let mut phong_color = LinSrgb::new(0.0, 0.0, 0.0); //phong_model.color;
+                let phong_model = intersection.phong_data;
+                let object_color = phong_model.material.get_color_at(u, v);
+                let mut shadow: bool = true;
+                for light in &self.light_sources {
+                    let point_to_light = light.position - intersection_point;
+                    let dist = point_to_light.norm();
+                    let to_light = Ray {
+                        origin: intersection_point + 0.0001 * normal,
+                        direction: point_to_light / dist,
+                    };
+                    let dot_diffuse = (normal * to_light.direction) as f32;
+                    if dot_diffuse > 0.0 && self.is_free_path(to_light, 0.0, dist) {
+                        shadow = false;
+                        let diffuse_component = dot_diffuse;
+                        let dot_specular = (-to_light.direction).reflect(normal) * to_viewer;
+                        let specular_component = if dot_specular > 0.0 {
+                            dot_specular.powf(phong_model.alpha as f64) as f32
+                        } else {
+                            0.0
+                        };
+
+                        //println!("{:?}", to_light.direction.reflect(normal) * ray_from);
+                        // Add specular component to Phong Model blended color
+                        phong_color = phong_color.component_wise(&light.color, |a, b| {
+                            a + b * specular_component * phong_model.k_s
+                        });
+                        // Add diffuse component to Phong Model blended color
+                        phong_color = phong_color.component_wise(&object_color, |a, b| {
+                            a + b * diffuse_component * phong_model.k_d
+                        });
                     }
-                    Material::None => return LinSrgb::new(0.0, 0.0, 0.0),
                 }
+                let mut reflected_color = LinSrgb::new(0.0, 0.0, 0.0);
+                if depth < self.max_depth {
+                    let reflected_ray = Ray {
+                        origin: intersection_point + 0.0001 * normal,
+                        direction: intersection.ray.direction.reflect(normal),
+                    };
+                    reflected_color = self.trace(reflected_ray, depth + 1);
+                }
+                let ambient_color = object_color
+                    .component_wise(&ambient_light, |a, b| 0.05 * phong_model.k_a * (a + b));
+                reflected_color = if shadow {
+                    reflected_color.component_wise_self(|a| phong_model.k_s * phong_model.k_a * a)
+                } else {
+                    reflected_color.component_wise_self(|a| phong_model.k_s * a)
+                };
+                let final_color = phong_color + reflected_color + ambient_color;
+                return final_color.clamp();
             }
             None => LinSrgb::new(0.0, 0.0, 0.0), //LinSrgb::new(117.0 / 255.0, 186.0 / 255.0, 1.0),
         }

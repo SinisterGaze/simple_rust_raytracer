@@ -59,11 +59,11 @@ impl Vec3D {
         result
     }
 
-    pub fn cross(a: Vec3D, b: Vec3D) -> Vec3D {
+    pub fn cross(self, b: Vec3D) -> Vec3D {
         Vec3D {
-            x: (a.y * b.z - a.z * b.y),
-            y: -(a.x * b.z - a.z * b.x),
-            z: (a.x * b.y - a.y * b.x),
+            x: (self.y * b.z - self.z * b.y),
+            y: -(self.x * b.z - self.z * b.x),
+            z: (self.x * b.y - self.y * b.x),
         }
     }
     pub fn is_finite(self) -> bool {

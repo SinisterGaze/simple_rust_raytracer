@@ -12,75 +12,82 @@ fn main() {
     let ball = Sphere {
         center: Vec3D::new(2.0, 1.0, 0.0),
         radius: 1.0,
-        material: Material::Phong(PhongModel {
-            color: (LinSrgb::new(1.0, 1.0, 1.0)),
+        phong_data: PhongModel {
+            material: Material::Color(LinSrgb::new(1.0, 1.0, 1.0)),
             k_s: (0.7),
             k_d: (0.2),
             k_a: (0.1),
             alpha: (500.0),
-        }),
+        },
     };
     let ball2 = Sphere {
         center: Vec3D::new(-2.0, 1.0, 0.0),
         radius: 1.0,
-        material: Material::Phong(PhongModel {
-            color: (LinSrgb::new(1.0, 0.0, 1.0)),
+        phong_data: PhongModel {
+            material: Material::Color(LinSrgb::new(1.0, 0.0, 1.0)),
             k_s: (0.7),
             k_d: (0.2),
             k_a: (0.3),
             alpha: (800.0),
-        }),
+        },
     };
     let floor = Plane {
         normal: Vec3D::new(0.0, 1.0, 0.0),
         distance: 0.0,
-        material: Material::Phong(PhongModel {
-            color: (LinSrgb::new(0.0, 0.0, 0.0)),
-            k_s: (0.2),
-            k_d: (0.8),
+        phong_data: PhongModel {
+            material: Material::Color(LinSrgb::new(0.0, 0.0, 0.0)),
+            k_s: (0.05),
+            k_d: (0.95),
             k_a: (0.1),
             alpha: (5.0),
-        }),
+        },
     };
     let right_wall = Plane {
         normal: Vec3D::new(-1.0, 0.0, 0.0),
         distance: -4.0,
-        material: Material::Phong(PhongModel {
-            color: (LinSrgb::new(0.3, 0.0, 0.0)),
+        phong_data: PhongModel {
+            material: Material::Color(LinSrgb::new(0.3, 0.0, 0.0)),
             k_s: (0.2),
             k_d: (0.8),
             k_a: (0.1),
             alpha: (5.0),
-        }),
+        },
     };
     let left_wall = Plane {
         normal: Vec3D::new(1.0, 0.0, 0.0),
         distance: -4.0,
-        material: Material::Phong(PhongModel {
-            color: (LinSrgb::new(0.0, 0.3, 0.0)),
+        phong_data: PhongModel {
+            material: Material::Color(LinSrgb::new(0.0, 0.3, 0.0)),
             k_s: (0.2),
             k_d: (0.8),
             k_a: (0.1),
             alpha: (5.0),
-        }),
+        },
     };
     let back_wall = Plane {
         normal: Vec3D::new(0.0, 0.0, -1.0),
         distance: -4.0,
-        material: Material::Phong(PhongModel {
-            color: (LinSrgb::new(0.0, 0.0, 0.3)),
+        phong_data: PhongModel {
+            material: Material::Color(LinSrgb::new(0.0, 0.0, 0.3)),
             k_s: (0.2),
             k_d: (0.8),
             k_a: (0.1),
             alpha: (5.0),
-        }),
+        },
     };
     let light = LightSource {
-        position: Vec3D::new(0.0, 20.0, 0.0),
+        position: Vec3D::new(0.0, 20.0, 3.0),
         color: LinSrgb::new(1.0, 1.0, 1.0),
     };
     let my_scene = Scene {
-        objects: vec![Box::new(ball), Box::new(ball2), Box::new(floor), Box::new(right_wall), Box::new(left_wall), Box::new(back_wall)],
+        objects: vec![
+            Box::new(ball),
+            Box::new(ball2),
+            Box::new(floor),
+            Box::new(right_wall),
+            Box::new(left_wall),
+            Box::new(back_wall),
+        ],
         light_sources: vec![light],
         max_depth: 3,
     };
@@ -99,7 +106,7 @@ fn main() {
     // Capture scene as pixel array
     let pixels = renderer.render_scene();
 
-    let path = "examples/two_balls";
+    let path = "examples/two_balls/output";
     let name = "two_balls";
 
     // Save pixel array as ppm

@@ -1,11 +1,13 @@
-use crate::materials::Material;
+use crate::materials::PhongModel;
 use crate::math::vector::Vec3D;
 use crate::objects::{hittables::*, ray::Ray};
+
+use crate::utils::fmod;
 
 pub struct Plane {
     pub normal: Vec3D,
     pub distance: f64,
-    pub material: Material,
+    pub phong_data: PhongModel,
 }
 
 impl Hittable for Plane {
@@ -25,11 +27,14 @@ impl Hittable for Plane {
             if t_min < t && t < t_max {
                 let normal = self.normal;
                 let front_face = ray.direction * normal < 0.0;
+                let (u, v) = self.point_to_uv(ray.at(t));
                 Some(IntersectionData {
                     ray: ray,
                     t: t,
                     normal: if front_face { normal } else { -normal },
-                    material: self.material,
+                    phong_data: &self.phong_data,
+                    u: u,
+                    v: v,
                 })
             } else {
                 None
@@ -37,7 +42,19 @@ impl Hittable for Plane {
         }
     }
 
-    fn get_material(&self) -> Material {
-        self.material
+    fn point_to_uv(&self, point: Vec3D) -> (f64, f64) {
+        let mut e1 = self.normal.cross(Vec3D::new(1.0, 0.0, 0.0));
+        if e1.almost_zero() {
+            e1 = self.normal.cross(Vec3D::new(0.0, 0.0, 1.0));
+        }
+        e1.normalize();
+        let e2 = self.normal.cross(e1).unit_vector();
+        let u = fmod(point * e1, 1.0);
+        let v = fmod(point * e2, 1.0);
+        (u, v)
+    }
+
+    fn get_phong_data(&self) -> &PhongModel {
+        &self.phong_data
     }
 }

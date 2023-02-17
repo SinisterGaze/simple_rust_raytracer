@@ -8,10 +8,15 @@ edition = "2021"
 [dependencies]
 impl_ops = "0.1.1"
 palette = "0.6.1"
+image = "0.24.5"
 
 [dev-dependencies]
-image = "0.24.5"
+
 
 [[example]]
 name = "two_balls"
 path = "examples/two_balls/src/two_balls.rs"
+
+[[example]]
+name = "earth"
+path = "examples/earth/src/earth.rs"

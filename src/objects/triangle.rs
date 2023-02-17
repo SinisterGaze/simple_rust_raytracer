@@ -1,12 +1,13 @@
-use crate::materials::Material;
+use crate::materials::PhongModel;
 use crate::math::vector::Vec3D;
 use crate::objects::{hittables::*, ray::Ray};
+use crate::utils::fmod;
 
 pub struct Triangle {
     pub vert_a: Vec3D,
     pub vert_b: Vec3D,
     pub vert_c: Vec3D,
-    pub material: Material,
+    pub phong_data: PhongModel,
 }
 
 impl Triangle {
@@ -38,11 +39,14 @@ impl Hittable for Triangle {
                     Vec3D::cross(self.vert_a - self.vert_c, p - self.vert_c) * normal >= 0.0;
                 if test1 && test2 && test3 {
                     let front_face = ray.direction * normal < 0.0;
+                    let (u, v) = self.point_to_uv(p);
                     Some(IntersectionData {
                         ray: ray,
                         t: t,
                         normal: if front_face { normal } else { -normal },
-                        material: self.material,
+                        phong_data: &self.phong_data,
+                        u: u,
+                        v: v,
                     })
                 } else {
                     None
@@ -53,7 +57,20 @@ impl Hittable for Triangle {
         }
     }
 
-    fn get_material(&self) -> Material {
-        self.material
+    fn get_phong_data(&self) -> &PhongModel {
+        &self.phong_data
+    }
+    
+    fn point_to_uv(&self, point: Vec3D) -> (f64, f64) {
+        let normal = self.normal();
+        let mut e1 = normal.cross(Vec3D::new(1.0, 0.0, 0.0));
+        if e1.almost_zero() {
+            e1 = normal.cross(Vec3D::new(0.0, 0.0, 1.0));
+        }
+        e1.normalize();
+        let e2 = normal.cross(e1).unit_vector();
+        let u = fmod(point * e1, 1.0);
+        let v = fmod(point * e2, 1.0);
+        (u, v)
     }
 }
