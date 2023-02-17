@@ -13,43 +13,76 @@ fn main() {
         center: Vec3D::new(2.0, 1.0, 0.0),
         radius: 1.0,
         material: Material::Phong(PhongModel {
-            color: (LinSrgb::new(1.0, 0.0, 0.0)),
-            k_s: (0.0),
-            k_d: (0.5),
-            k_a: (1.0),
-            alpha: (2.0),
+            color: (LinSrgb::new(1.0, 1.0, 1.0)),
+            k_s: (0.7),
+            k_d: (0.2),
+            k_a: (0.1),
+            alpha: (500.0),
         }),
     };
     let ball2 = Sphere {
         center: Vec3D::new(-2.0, 1.0, 0.0),
         radius: 1.0,
         material: Material::Phong(PhongModel {
-            color: (LinSrgb::new(1.0, 1.0, 1.0)),
-            k_s: (0.5),
-            k_d: (0.5),
-            k_a: (1.0),
-            alpha: (5.0),
+            color: (LinSrgb::new(1.0, 0.0, 1.0)),
+            k_s: (0.7),
+            k_d: (0.2),
+            k_a: (0.3),
+            alpha: (800.0),
         }),
     };
     let floor = Plane {
         normal: Vec3D::new(0.0, 1.0, 0.0),
         distance: 0.0,
         material: Material::Phong(PhongModel {
-            color: (LinSrgb::new(0.1, 0.9, 0.0)),
-            k_s: (0.5),
-            k_d: (0.5),
-            k_a: (1.0),
+            color: (LinSrgb::new(0.0, 0.0, 0.0)),
+            k_s: (0.2),
+            k_d: (0.8),
+            k_a: (0.1),
+            alpha: (5.0),
+        }),
+    };
+    let right_wall = Plane {
+        normal: Vec3D::new(-1.0, 0.0, 0.0),
+        distance: -4.0,
+        material: Material::Phong(PhongModel {
+            color: (LinSrgb::new(0.3, 0.0, 0.0)),
+            k_s: (0.2),
+            k_d: (0.8),
+            k_a: (0.1),
+            alpha: (5.0),
+        }),
+    };
+    let left_wall = Plane {
+        normal: Vec3D::new(1.0, 0.0, 0.0),
+        distance: -4.0,
+        material: Material::Phong(PhongModel {
+            color: (LinSrgb::new(0.0, 0.3, 0.0)),
+            k_s: (0.2),
+            k_d: (0.8),
+            k_a: (0.1),
+            alpha: (5.0),
+        }),
+    };
+    let back_wall = Plane {
+        normal: Vec3D::new(0.0, 0.0, -1.0),
+        distance: -4.0,
+        material: Material::Phong(PhongModel {
+            color: (LinSrgb::new(0.0, 0.0, 0.3)),
+            k_s: (0.2),
+            k_d: (0.8),
+            k_a: (0.1),
             alpha: (5.0),
         }),
     };
     let light = LightSource {
-        position: Vec3D::new(5.0, 20.0, -5.0),
+        position: Vec3D::new(0.0, 20.0, 0.0),
         color: LinSrgb::new(1.0, 1.0, 1.0),
     };
     let my_scene = Scene {
-        objects: vec![Box::new(ball), Box::new(floor), Box::new(ball2)],
+        objects: vec![Box::new(ball), Box::new(ball2), Box::new(floor), Box::new(right_wall), Box::new(left_wall), Box::new(back_wall)],
         light_sources: vec![light],
-        max_depth: 2,
+        max_depth: 3,
     };
     let my_camera = Camera {
         origin: Vec3D::new(0.0, 3.0, -5.0),

@@ -79,7 +79,7 @@ impl Vec3D {
         let scalar = (other * self) / other.norm2();
         scalar * other
     }
-    // returns self's perpendicular component to other
+    // returns self's perpendicular component relative to other
     pub fn perp(self, other: Vec3D) -> Vec3D {
         self - self.project_onto(other)
     }
