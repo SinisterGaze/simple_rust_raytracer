@@ -5,9 +5,11 @@ use crate::objects::{hittables::*, ray::Ray};
 use crate::utils;
 
 use palette::{Clamp, ComponentWise, LinSrgb, Pixel, Srgb};
+use rayon::prelude::*;
+use std::sync::Arc;
 
 pub struct Scene {
-    pub objects: Vec<Box<dyn Hittable>>,
+    pub objects: Vec<Arc<dyn Hittable + Send + Sync>>,
     pub light_sources: Vec<LightSource>,
     pub max_depth: u32,
 }
@@ -61,7 +63,7 @@ impl Scene {
                 let u = intersection.u;
                 let v = intersection.v;
                 let mut phong_color = LinSrgb::new(0.0, 0.0, 0.0); //phong_model.color;
-                let phong_model = intersection.phong_data;
+                let phong_model = intersection.phong_data.unwrap();
                 let object_color = phong_model.material.get_color_at(u, v);
                 let mut shadow: bool = true;
                 for light in &self.light_sources {
@@ -103,11 +105,13 @@ impl Scene {
                 }
                 let ambient_color = object_color
                     .component_wise(&ambient_light, |a, b| 0.05 * phong_model.k_a * (a + b));
+
                 reflected_color = if shadow {
                     reflected_color.component_wise_self(|a| phong_model.k_s * phong_model.k_a * a)
                 } else {
                     reflected_color.component_wise_self(|a| phong_model.k_s * a)
                 };
+
                 let final_color = phong_color + reflected_color + ambient_color;
                 return final_color.clamp();
             }
@@ -153,9 +157,12 @@ impl Renderer {
     }
 
     pub fn render_scene(&self) -> Vec<u8> {
+        let mut total = 0;
         (0..self.height)
-            .into_iter()
-            .map(|y| self.render_row(y))
+            .into_par_iter()
+            .map(|y| {
+                self.render_row(y)
+            })
             .flatten()
             .collect()
     }

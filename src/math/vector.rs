@@ -37,8 +37,13 @@ impl_op_ex!(*= |lhs: &mut Vec3D, rhs: &f64| {lhs.x *= rhs; lhs.y *= rhs; lhs.z *
 impl_op_ex!(/= |lhs: &mut Vec3D, rhs: &f64| {lhs.x /= rhs; lhs.y /= rhs; lhs.z /= rhs;});
 
 impl Vec3D {
-    pub fn new(x: f64, y: f64, z: f64) -> Vec3D {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vec3D { x, y, z }
+    }
+
+    pub fn from_vec(coords: Vec<f64>) -> Self {
+        assert_eq!(coords.len(), 3);
+        Vec3D { x: coords[0], y: coords[1], z: coords[2] }
     }
 
     pub fn norm(&self) -> f64 {
@@ -59,7 +64,7 @@ impl Vec3D {
         result
     }
 
-    pub fn cross(self, b: Vec3D) -> Vec3D {
+    pub fn cross(self, b: Vec3D) -> Self {
         Vec3D {
             x: (self.y * b.z - self.z * b.y),
             y: -(self.x * b.z - self.z * b.x),
@@ -75,16 +80,16 @@ impl Vec3D {
     }
 
     // projects self onto other, i.e. returns the component of self that is parallel to other
-    pub fn project_onto(self, other: Vec3D) -> Vec3D {
+    pub fn project_onto(self, other: Vec3D) -> Self {
         let scalar = (other * self) / other.norm2();
         scalar * other
     }
     // returns self's perpendicular component relative to other
-    pub fn perp(self, other: Vec3D) -> Vec3D {
+    pub fn perp(self, other: Vec3D) -> Self {
         self - self.project_onto(other)
     }
     // reflects incoming vector self on plane given by normal vector
-    pub fn reflect(self, normal: Vec3D) -> Vec3D {
+    pub fn reflect(self, normal: Vec3D) -> Self {
         self - 2.0 * self.project_onto(normal)
     }
 

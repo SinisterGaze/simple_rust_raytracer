@@ -1,4 +1,3 @@
-use simple_raytracer::materials::PhongModel;
 use simple_raytracer::math::vector::Vec3D;
 use simple_raytracer::objects::{
     hittables::*, plane::Plane, ray::Ray, sphere::Sphere, triangle::Triangle,
@@ -10,7 +9,7 @@ fn test_plane_intersect() {
     let my_plane = Plane {
         normal: Vec3D::new(0.0, 0.0, 1.0),
         distance: 0.0,
-        phong_data: PhongModel::new(),
+        phong_data: None,
     };
 
     let my_ray = Ray {
@@ -26,7 +25,7 @@ fn test_plane_intersect() {
     let my_plane = Plane {
         normal: Vec3D::new(2.0, -3.0, 1.0),
         distance: 3.0 / f64::sqrt(14.0),
-        phong_data: PhongModel::new(),
+        phong_data: None,
     };
 
     let my_ray = Ray {
@@ -43,7 +42,7 @@ fn test_sphere_intersect() {
     let my_sphere = Sphere {
         center: Vec3D::default(),
         radius: 3.0,
-        phong_data: PhongModel::new(),
+        phong_data: None,
     };
     let my_ray = Ray {
         origin: Vec3D::new(0.0, 0.0, 5.0),
@@ -60,7 +59,6 @@ fn test_triangle_intersect() {
         vert_a: Vec3D::default(),
         vert_b: Vec3D::new(1.0, 0.0, 0.0),
         vert_c: Vec3D::new(0.0, 1.0, 0.0),
-        phong_data: PhongModel::new(),
     };
 
     // Intersect at (0.25, 0.25, 0)
@@ -68,6 +66,6 @@ fn test_triangle_intersect() {
         origin: Vec3D::new(0.25, 0.25, 5.0),
         direction: Vec3D::new(0.0, 0.0, -1.0),
     };
-    let p = my_triangle.intersect(ray1, 0.0, f64::INFINITY).unwrap();
-    assert_eq!(p.t, 5.0);
+    let t = my_triangle.get_intersection(ray1, 0.0, f64::INFINITY).unwrap();
+    assert_eq!(t, 5.0);
 }

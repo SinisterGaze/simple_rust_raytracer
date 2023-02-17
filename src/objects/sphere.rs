@@ -6,7 +6,7 @@ use crate::objects::{hittables::*, ray::Ray};
 pub struct Sphere {
     pub center: Vec3D,
     pub radius: f64,
-    pub phong_data: PhongModel,
+    pub phong_data: Option<PhongModel>,
 }
 
 impl Hittable for Sphere {
@@ -48,7 +48,7 @@ impl Hittable for Sphere {
                 ray: ray,
                 t: root,
                 normal: if front_face { normal } else { -normal },
-                phong_data: &self.phong_data,
+                phong_data: self.phong_data.as_ref(),
                 u: u,
                 v: v,
             });
@@ -57,8 +57,8 @@ impl Hittable for Sphere {
         }
     }
 
-    fn get_phong_data(&self) -> &PhongModel {
-        &self.phong_data
+    fn get_phong_data(&self) -> Option<&PhongModel> {
+        self.phong_data.as_ref()
     }
 
     fn point_to_uv(&self, point: Vec3D) -> (f64, f64) {

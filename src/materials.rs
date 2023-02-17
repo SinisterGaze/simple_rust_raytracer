@@ -3,6 +3,7 @@ use palette::LinSrgb;
 use std::error::Error;
 use std::path::Path;
 
+
 #[derive(Debug, Clone)]
 pub enum Material {
     Color(LinSrgb),

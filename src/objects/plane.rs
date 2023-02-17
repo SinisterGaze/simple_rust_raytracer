@@ -7,7 +7,7 @@ use crate::utils::fmod;
 pub struct Plane {
     pub normal: Vec3D,
     pub distance: f64,
-    pub phong_data: PhongModel,
+    pub phong_data: Option<PhongModel>,
 }
 
 impl Hittable for Plane {
@@ -32,7 +32,7 @@ impl Hittable for Plane {
                     ray: ray,
                     t: t,
                     normal: if front_face { normal } else { -normal },
-                    phong_data: &self.phong_data,
+                    phong_data: self.phong_data.as_ref(),
                     u: u,
                     v: v,
                 })
@@ -54,7 +54,7 @@ impl Hittable for Plane {
         (u, v)
     }
 
-    fn get_phong_data(&self) -> &PhongModel {
-        &self.phong_data
+    fn get_phong_data(&self) -> Option<&PhongModel> {
+        self.phong_data.as_ref()
     }
 }

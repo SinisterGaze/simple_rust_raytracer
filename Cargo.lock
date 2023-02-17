@@ -561,6 +561,7 @@ dependencies = [
  "image",
  "impl_ops",
  "palette",
+ "rayon",
 ]
 
 [[package]]
