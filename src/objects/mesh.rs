@@ -51,6 +51,7 @@ impl Mesh {
                 }
             }
         }
+        triangles.sort_by(|a, b| a.partial_cmp(b).unwrap());
         Ok(Mesh {
             triangles: triangles,
             phong_data: None,
@@ -63,7 +64,7 @@ impl Mesh {
 }
 
 impl Hittable for Mesh {
-    fn intersect(&self, ray: Ray, t_min: f64, t_max: f64) -> Option<IntersectionData> {
+    /*fn intersect(&self, ray: Ray, t_min: f64, t_max: f64) -> Option<IntersectionData> {
         let mut best = t_max;
         let mut winner: Option<Triangle> = None;
         for triangle in &self.triangles {
@@ -73,11 +74,35 @@ impl Hittable for Mesh {
             }
         }
         if let Some(triangle) = winner {
-            let (u, v) = triangle.point_to_uv(ray.at(best));
-            Some(IntersectionData { ray: ray, t: best, normal: triangle.normal(), phong_data: self.phong_data.as_ref(), u: u, v: v })
+            let (u, v) = (0.0, 0.0); // TODO! triangle.point_to_uv(ray.at(best));
+            Some(IntersectionData {
+                ray: ray,
+                t: best,
+                normal: triangle.normal(),
+                phong_data: self.phong_data.as_ref(),
+                u: u,
+                v: v,
+            })
         } else {
             None
         }
+    }*/
+     
+    fn intersect(&self, ray: Ray, t_min: f64, t_max: f64) -> Option<IntersectionData> {
+        for triangle in &self.triangles {
+            if let Some(t) = triangle.get_intersection(ray, t_min, t_max) {
+                let (u, v) = (0.0, 0.0); // TODO! triangle.point_to_uv(ray.at(best));
+                return Some(IntersectionData {
+                    ray: ray,
+                    t: t,
+                    normal: triangle.normal(),
+                    phong_data: self.phong_data.as_ref(),
+                    u: u,
+                    v: v,
+                });
+            }
+        }
+        None
     }
 
     fn get_phong_data(&self) -> Option<&PhongModel> {

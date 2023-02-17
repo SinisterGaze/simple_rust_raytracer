@@ -16,5 +16,9 @@ pub fn save_ppm(
 
 pub fn fmod(num: f64, den: f64) -> f64 {
     let result = num % den;
-    if result > 0.0 { result } else { den - result }
+    if result > 0.0 {
+        result
+    } else {
+        den - result
+    }
 }

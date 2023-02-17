@@ -66,6 +66,8 @@ fn test_triangle_intersect() {
         origin: Vec3D::new(0.25, 0.25, 5.0),
         direction: Vec3D::new(0.0, 0.0, -1.0),
     };
-    let t = my_triangle.get_intersection(ray1, 0.0, f64::INFINITY).unwrap();
+    let t = my_triangle
+        .get_intersection(ray1, 0.0, f64::INFINITY)
+        .unwrap();
     assert_eq!(t, 5.0);
 }

@@ -1,5 +1,5 @@
 use crate::math::vector::Vec3D;
-use crate::objects::{ray::Ray};
+use crate::objects::ray::Ray;
 use crate::utils::fmod;
 
 #[derive(Debug, Clone, Copy)]
@@ -44,7 +44,7 @@ impl Triangle {
             }
         }
     }
-    
+
     pub fn point_to_uv(&self, point: Vec3D) -> (f64, f64) {
         let normal = self.normal();
         let mut e1 = normal.cross(Vec3D::new(1.0, 0.0, 0.0));
@@ -56,5 +56,21 @@ impl Triangle {
         let u = fmod(point * e1, 1.0);
         let v = fmod(point * e2, 1.0);
         (u, v)
+    }
+
+    pub fn min_z(&self) -> f64 {
+        [self.vert_a.z, self.vert_b.z, self.vert_c.z].into_iter().reduce(|a, b| f64::min(a,b)).unwrap()
+    }
+}
+
+impl PartialEq for Triangle {
+    fn eq(&self, other: &Self) -> bool {
+        self.min_z() == other.min_z()
+    }
+}
+
+impl PartialOrd for Triangle {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.min_z().partial_cmp(&other.min_z())
     }
 }

@@ -157,10 +157,10 @@ impl Renderer {
     }
 
     pub fn render_scene(&self) -> Vec<u8> {
-        let mut total = 0;
         (0..self.height)
             .into_par_iter()
             .map(|y| {
+                println!("{}", y);
                 self.render_row(y)
             })
             .flatten()

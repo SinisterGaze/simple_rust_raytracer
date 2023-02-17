@@ -43,7 +43,11 @@ impl Vec3D {
 
     pub fn from_vec(coords: Vec<f64>) -> Self {
         assert_eq!(coords.len(), 3);
-        Vec3D { x: coords[0], y: coords[1], z: coords[2] }
+        Vec3D {
+            x: coords[0],
+            y: coords[1],
+            z: coords[2],
+        }
     }
 
     pub fn norm(&self) -> f64 {

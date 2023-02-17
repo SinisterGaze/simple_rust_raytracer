@@ -65,6 +65,6 @@ impl Hittable for Sphere {
         use std::f64::consts::PI;
         let u = f64::atan2(point.x, point.z) / (2.0 * PI) + 0.5;
         let v = f64::asin(point.y) / PI + 0.5;
-        (u, 1.0-v)
+        (u, 1.0 - v)
     }
 }
