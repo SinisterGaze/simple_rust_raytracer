@@ -39,7 +39,8 @@ impl Mesh {
                             let mut vertices: Vec<usize> = Vec::new();
                             let mut vts: Vec<usize> = Vec::new();
                             let mut vns: Vec<usize> = Vec::new();
-                            let values: Vec<&str> = data[2..].split(" ").filter(|x| !x.is_empty()).collect();
+                            let values: Vec<&str> =
+                                data[2..].split(" ").filter(|x| !x.is_empty()).collect();
                             let n_vertices = values.len();
                             for value in values.into_iter() {
                                 if let Some((v, rest)) = value.split_once("/") {
@@ -62,7 +63,7 @@ impl Mesh {
                             (0..(n_vertices - 2)).for_each(|i| {
                                 let vertex_normals = if vns.len() > 0 {
                                     Some([
-                                        normals[vns[i] - 1],
+                                        normals[vns[0] - 1],
                                         normals[vns[i + 1] - 1],
                                         normals[vns[i + 2] - 1],
                                     ])
@@ -71,15 +72,15 @@ impl Mesh {
                                 };
                                 let vertex_uvs = if vts.len() > 0 {
                                     Some([
-                                        uvs[vts[i] - 1],
-                                        uvs[vts[i + 1]-1],
-                                        uvs[vts[i + 2]-1]
+                                        uvs[vts[0] - 1],
+                                        uvs[vts[i + 1] - 1],
+                                        uvs[vts[i + 2] - 1],
                                     ])
                                 } else {
                                     None
                                 };
                                 let triangle = Triangle {
-                                    vert_a: vbo[vertices[i] - 1],
+                                    vert_a: vbo[vertices[0] - 1],
                                     vert_b: vbo[vertices[i + 1] - 1],
                                     vert_c: vbo[vertices[i + 2] - 1],
                                     normal: vertex_normals,

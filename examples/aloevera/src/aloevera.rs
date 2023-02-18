@@ -25,16 +25,16 @@ fn main() {
         color: LinSrgb::new(1.0, 1.0, 1.0),
     };
     let floor = Plane {
-            normal: Vec3D::new(0.0, 1.0, 0.0),
-            distance: 0.0,
-            phong_data: Some(PhongModel {
-                material: Material::Color(LinSrgb::new(1.0, 1.0, 1.0)),
-                k_s: (0.5),
-                k_d: (0.5),
-                k_a: (0.02),
-                alpha: (500.0),
-            }),
-        };
+        normal: Vec3D::new(0.0, 1.0, 0.0),
+        distance: 0.0,
+        phong_data: Some(PhongModel {
+            material: Material::Color(LinSrgb::new(1.0, 1.0, 1.0)),
+            k_s: (0.5),
+            k_d: (0.5),
+            k_a: (0.02),
+            alpha: (500.0),
+        }),
+    };
     let my_scene = Scene {
         objects: vec![Arc::new(aloevera), Arc::new(floor)],
         light_sources: vec![light],

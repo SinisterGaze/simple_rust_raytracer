@@ -55,7 +55,7 @@ impl Hittable for Plane {
                 None
             }
         }
-    } 
+    }
 
     fn get_phong_data(&self) -> Option<&PhongModel> {
         self.phong_data.as_ref()
