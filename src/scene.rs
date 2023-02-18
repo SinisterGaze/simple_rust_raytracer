@@ -59,7 +59,6 @@ impl Scene {
                 let normal = intersection.normal;
                 let to_viewer = -ray.direction.unit_vector();
                 let intersection_point = ray.at(intersection.t);
-
                 let u = intersection.u;
                 let v = intersection.v;
                 let mut phong_color = LinSrgb::new(0.0, 0.0, 0.0); //phong_model.color;

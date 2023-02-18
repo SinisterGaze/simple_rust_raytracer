@@ -59,6 +59,8 @@ fn test_triangle_intersect() {
         vert_a: Vec3D::default(),
         vert_b: Vec3D::new(1.0, 0.0, 0.0),
         vert_c: Vec3D::new(0.0, 1.0, 0.0),
+        normal: None,
+        uv: None,
     };
 
     // Intersect at (0.25, 0.25, 0)

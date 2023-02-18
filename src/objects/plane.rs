@@ -4,10 +4,25 @@ use crate::objects::{hittables::*, ray::Ray};
 
 use crate::utils::fmod;
 
+#[derive(Debug, Clone)]
 pub struct Plane {
     pub normal: Vec3D,
     pub distance: f64,
     pub phong_data: Option<PhongModel>,
+}
+
+impl Plane {
+    fn point_to_uv(&self, point: Vec3D) -> (f64, f64) {
+        let mut e1 = self.normal.cross(Vec3D::new(1.0, 0.0, 0.0));
+        if e1.almost_zero() {
+            e1 = self.normal.cross(Vec3D::new(0.0, 0.0, 1.0));
+        }
+        e1.normalize();
+        let e2 = self.normal.cross(e1).unit_vector();
+        let u = fmod(point * e1, 1.0);
+        let v = fmod(point * e2, 1.0);
+        (u, v)
+    }
 }
 
 impl Hittable for Plane {
@@ -40,19 +55,7 @@ impl Hittable for Plane {
                 None
             }
         }
-    }
-
-    fn point_to_uv(&self, point: Vec3D) -> (f64, f64) {
-        let mut e1 = self.normal.cross(Vec3D::new(1.0, 0.0, 0.0));
-        if e1.almost_zero() {
-            e1 = self.normal.cross(Vec3D::new(0.0, 0.0, 1.0));
-        }
-        e1.normalize();
-        let e2 = self.normal.cross(e1).unit_vector();
-        let u = fmod(point * e1, 1.0);
-        let v = fmod(point * e2, 1.0);
-        (u, v)
-    }
+    } 
 
     fn get_phong_data(&self) -> Option<&PhongModel> {
         self.phong_data.as_ref()

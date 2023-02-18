@@ -9,6 +9,15 @@ pub struct Sphere {
     pub phong_data: Option<PhongModel>,
 }
 
+impl Sphere {
+    fn point_to_uv(&self, point: Vec3D) -> (f64, f64) {
+        use std::f64::consts::PI;
+        let u = f64::atan2(point.x, point.z) / (2.0 * PI) + 0.5;
+        let v = f64::asin(point.y) / PI + 0.5;
+        (u, 1.0 - v)
+    }
+}
+
 impl Hittable for Sphere {
     // Solve for ray: p0 + t * p intersecting with sphere: |x-x0| = r
     // results in solving a quadratic formula at^2 + bt + c = 0 with
@@ -59,12 +68,5 @@ impl Hittable for Sphere {
 
     fn get_phong_data(&self) -> Option<&PhongModel> {
         self.phong_data.as_ref()
-    }
-
-    fn point_to_uv(&self, point: Vec3D) -> (f64, f64) {
-        use std::f64::consts::PI;
-        let u = f64::atan2(point.x, point.z) / (2.0 * PI) + 0.5;
-        let v = f64::asin(point.y) / PI + 0.5;
-        (u, 1.0 - v)
     }
 }
