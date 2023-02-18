@@ -2,7 +2,6 @@ use crate::materials::PhongModel;
 use crate::math::vector::Vec3D;
 use crate::objects::{hittables::*, ray::*, triangle::Triangle};
 
-use regex::Regex;
 use std::error::Error;
 use std::fs::File;
 use std::io::{self, BufRead};
