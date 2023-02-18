@@ -10,6 +10,7 @@ impl_ops = "0.1.1"
 palette = "0.6.1"
 image = "0.24.5"
 rayon = "1.6.1"
+regex = "1.7.1"
 
 [dev-dependencies]
 
@@ -25,3 +26,7 @@ path = "examples/earth/src/earth.rs"
 [[example]]
 name = "teapot"
 path = "examples/teapot/src/teapot.rs"
+
+[[example]]
+name = "aloevera"
+path = "examples/aloevera/src/aloevera.rs"
